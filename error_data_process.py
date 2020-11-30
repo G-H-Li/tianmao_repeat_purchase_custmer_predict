@@ -101,7 +101,7 @@ def preprocess():
         .reset_index()
     four_features = four_features.drop(["action_type", "times"], axis=1)
     train_data = pd.merge(train_data, four_features, on=["user_id", "merchant_id"], how="left")
-    train_data.fillna(method="ffill")
+    train_data = train_data.fillna(method="ffill")
     train_data.head()
     train_data.info()
     print("feature extraction success!")
@@ -116,13 +116,13 @@ if __name__ == "__main__":
         preprocess()
 
     print('load train data...')
-    train_data = pd.read_csv(r".\dataset\train_data.csv")
-    test_data = pd.read_csv(r".\dataset\test_format1.csv")
+    train = pd.read_csv(r".\dataset\train_data.csv")
+    test = pd.read_csv(r".\dataset\test_format1.csv")
     # start train
     # prepare data
     print("prepare data...")
-    X = train_data.drop(['user_id', 'merchant_id', 'label'], axis=1)
-    Y = train_data['label']
+    X = train.drop(['user_id', 'merchant_id', 'label'], axis=1)
+    Y = train['label']
     X.info()
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.25, random_state=10)
     print("start train...")
