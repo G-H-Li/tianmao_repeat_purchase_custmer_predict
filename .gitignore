@@ -4,4 +4,4 @@ Scripts/
 dataset/*.csv
 pyvenv.cfg
 .idea/
-!dataset
+!dataset/sample_submission.csv
