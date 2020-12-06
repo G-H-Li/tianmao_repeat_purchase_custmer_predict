@@ -93,11 +93,20 @@ def preprocess():
     four_features = four_features.drop(["action_type", "times"], axis=1)
     print("extract four_features feature success!")
     print('-' * 50)
+
+    # Seventh : brand num
+    brand_count_temp = user_log.groupby([user_log["user_id"], user_log["seller_id"], user_log["brand_id"]]) \
+        .count() \
+        .reset_index()[["user_id", "seller_id", "brand_id"]]
+    brand_count_temp = brand_count_temp.groupby([brand_count_temp["user_id"], brand_count_temp["seller_id"]]) \
+        .count() \
+        .reset_index()
+    brand_count_temp.rename(columns={"seller_id": "merchant_id", "brand_id": "brand_count"}, inplace=True)
     print("feature extraction success!")
-    return user_info, total_logs_tmp, item_ids_tmp, categories_temp, browse_days_temp, four_features
+    return user_info, total_logs_tmp, item_ids_tmp, categories_temp, browse_days_temp, four_features, brand_count_temp
 
 
-def create_dataset(dataset_path, user_info, total_logs, item_ids, categories, browse_days, four_features, save_path):
+def create_dataset(dataset_path, user_info, total_logs, item_ids, categories, browse_days, four_features, brand_count, save_path):
     print("start create dataset...")
     data = pd.read_csv(dataset_path)
     data = pd.merge(data, user_info, on="user_id", how="left")
@@ -106,6 +115,8 @@ def create_dataset(dataset_path, user_info, total_logs, item_ids, categories, br
     data = pd.merge(data, categories, on=["user_id", "merchant_id"], how="left")
     data = pd.merge(data, browse_days, on=["user_id", "merchant_id"], how="left")
     data = pd.merge(data, four_features, on=["user_id", "merchant_id"], how="left")
+    data = pd.merge(data, brand_count, on=["user_id", "merchant_id"], how="left")
+    data["brand_count"].replace(np.nan, 0.0, replace=True)
     data = data.fillna(method="bfill").fillna(method="ffill")
     data.info()
     print("saving data...")
@@ -145,11 +156,11 @@ if __name__ == "__main__":
     train_path = r".\dataset\train_data.csv"
     test_path = r".\dataset\test_data.csv"
     if not (os.path.exists(train_path) and os.path.exists(test_path)):
-        user_info, total_logs, item_ids, categories, browse_days, four_features = preprocess()
+        user_info, total_logs, item_ids, categories, browse_days, four_features, brand_count = preprocess()
         if not os.path.exists(train_path):
-            create_dataset(r".\dataset\train_format1.csv", user_info, total_logs, item_ids, categories, browse_days, four_features, train_path)
+            create_dataset(r".\dataset\train_format1.csv", user_info, total_logs, item_ids, categories, browse_days, four_features, brand_count, train_path)
         if not os.path.exists(test_path):
-            create_dataset(r".\dataset\test_format1.csv", user_info, total_logs, item_ids, categories, browse_days, four_features, test_path)
+            create_dataset(r".\dataset\test_format1.csv", user_info, total_logs, item_ids, categories, browse_days, four_features, brand_count, test_path)
 
     print('load train data...')
     train_data = pd.read_csv(r".\dataset\train_data.csv")
