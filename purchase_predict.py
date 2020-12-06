@@ -1,13 +1,9 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 # import seaborn as sns
-
-
-plt.rcParams["font.sans-serif"] = "SimHei"  # 解决中文乱码
 
 
 # data preprocessing
@@ -131,7 +127,7 @@ def train_forest(data):
     X.info()
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.25, random_state=10)
     print("start train...")
-    forest = RandomForestClassifier(n_estimators=10, random_state=2)
+    forest = RandomForestClassifier(n_estimators=15, max_depth=7, bootstrap=True, max_features=8)
     forest.fit(x_train, y_train)
     predict_prob = forest.predict_proba(x_test)
     print(predict_prob[:])
